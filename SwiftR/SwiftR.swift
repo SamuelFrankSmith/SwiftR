@@ -82,15 +82,16 @@ public final class SwiftR: NSObject {
             let fileManager = FileManager.default
             
             do {
-                if let path = jqueryTempURL.path , fileManager.fileExists(atPath: path) {
+                if fileManager.fileExists(atPath: jqueryTempURL.path) {
                     try fileManager.removeItem(at: jqueryTempURL)
                 }
-                if let path = signalRTempURL.path , fileManager.fileExists(atPath: path) {
+                if fileManager.fileExists(atPath: signalRTempURL.path) {
                     try fileManager.removeItem(at: signalRTempURL)
                 }
-                if let path = jsTempURL.path , fileManager.fileExists(atPath: path) {
+                if fileManager.fileExists(atPath: jsTempURL.path) {
                     try fileManager.removeItem(at: jsTempURL)
                 }
+
             } catch {
                 print("Failed to remove temp JavaScript")
             }
@@ -198,9 +199,9 @@ open class SignalR: NSObject, SwiftRWebDelegate {
         super.init()
         
         #if COCOAPODS
-            let bundle = NSBundle(identifier: "org.cocoapods.SwiftR")!
+            let bundle = Bundle(identifier: "org.cocoapods.SwiftR")!
         #elseif SWIFTR_FRAMEWORK
-            let bundle = NSBundle(identifier: "com.adamhartford.SwiftR")!
+            let bundle = Bundle(identifier: "com.adamhartford.SwiftR")!
         #else
             let bundle = Bundle.main
         #endif
@@ -330,17 +331,16 @@ open class SignalR: NSObject, SwiftRWebDelegate {
             let id = (request.url!.absoluteString as NSString).substring(from: 9)
             let msg = webView.stringByEvaluatingJavaScript(from: "readMessage('\(id)')")!
             let data = msg.data(using: String.Encoding.utf8, allowLossyConversion: false)!
-            let json: AnyObject = try! JSONSerialization.jsonObject(with: data, options: [])
-            
-            processMessage(json)
-
+            if let json = try! JSONSerialization.jsonObject(with: data, options: []) as? Dictionary<String, AnyObject> {
+                processMessage(json)
+            }
             return false
         }
         
         return true
     }
     
-    func processMessage(_ json: AnyObject) {
+    func processMessage(_ json: Dictionary<String, AnyObject>) {
         if let message = json["message"] as? String {
             switch message {
             case "ready":
@@ -405,7 +405,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
         }
     }
     
-    func runJavaScript(_ script: String, callback: ((AnyObject?) -> ())? = nil) {
+    func runJavaScript(_ script: String, callback: ((Any?) -> ())? = nil) {
         if SwiftR.useWKWebView {
             wkWebView.evaluateJavaScript(script, completionHandler: { (result, _)  in
                 callback?(result)
@@ -430,8 +430,8 @@ open class SignalR: NSObject, SwiftRWebDelegate {
     open func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if let id = message.body as? String {
             wkWebView.evaluateJavaScript("readMessage('\(id)')", completionHandler: { [weak self] (msg, err) in
-                if let m = msg {
-                    self?.processMessage(m as AnyObject)
+                if let m = msg as? Dictionary<String, AnyObject> {
+                    self?.processMessage(m)
                 } else if let e = err {
                     print("SwiftR unable to process message \(id): \(e)")
                 } else {
@@ -475,7 +475,7 @@ open class Hub {
         self.connection = connection
     }
     
-    open func on(_ method: String, callback: ([AnyObject]?) -> ()) {
+    open func on(_ method: String, callback: (([AnyObject]?) -> ())) {
         let callbackID = UUID().uuidString
         
         if handlers[method] == nil {
