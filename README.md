@@ -4,6 +4,18 @@
 
 A Swift client for SignalR. Supports hubs and persistent connections.
 
+---
+
+### Swift 3
+
+SwiftR converted to support Xcode 8 and Swift 3. WIP! Until last week, I had no previous knowledge of SignalR. These changes have been made so that the framework builds, demo project works as intended, and Carthage can build with no errors or warnings. 
+
+Since there are no coupled unit tests, and my knowledge of SignalR is lacking at best, do not use this without carefully vetting my changes. No Pull Request into adamhartford/SwiftR was created at this time because there does not exist a 'swift3' branch against which to merge.
+
+-Sam
+
+---
+
 ### Demo
 
 I have published a sample SignalR server at http://swiftr.azurewebsites.net. The iOS demo application now uses this server. See [SwiftRChat](https://github.com/adamhartford/SwiftRChat) for the souce code. It's based on this, with some minor changes:

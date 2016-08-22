@@ -140,9 +140,9 @@ open class SignalR: NSObject, SwiftRWebDelegate {
     open var reconnected: (() -> ())?
     open var error: ((AnyObject?) -> ())?
     
-    open var queryString: AnyObject? {
+    open var queryString: Any? {
         didSet {
-            if let qs: AnyObject = queryString {
+            if let qs: Any = queryString {
                 if let jsonData = try? JSONSerialization.data(withJSONObject: qs, options: JSONSerialization.WritingOptions()) {
                     let json = NSString(data: jsonData, encoding: String.Encoding.utf8.rawValue) as! String
                     runJavaScript("swiftR.connection.qs = \(json)")
