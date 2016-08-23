@@ -130,7 +130,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
 
     open var state: State = .disconnected
     open var connectionID: String?
-    open var received: ((AnyObject?) -> ())?
+    open var received: ((Any?) -> ())?
     open var starting: (() -> ())?
     open var connected: (() -> ())?
     open var disconnected: (() -> ())?
@@ -140,12 +140,14 @@ open class SignalR: NSObject, SwiftRWebDelegate {
     open var reconnected: (() -> ())?
     open var error: ((AnyObject?) -> ())?
     
-    open var queryString: Any? {
+    open var queryString: Dictionary<String, Any>? {
         didSet {
-            if let qs: Any = queryString {
-                if let jsonData = try? JSONSerialization.data(withJSONObject: qs, options: JSONSerialization.WritingOptions()) {
-                    let json = NSString(data: jsonData, encoding: String.Encoding.utf8.rawValue) as! String
-                    runJavaScript("swiftR.connection.qs = \(json)")
+            if let qs: Dictionary<String, Any> = queryString {
+                if JSONSerialization.isValidJSONObject(qs) {
+                    if let jsonData = try? JSONSerialization.data(withJSONObject: qs, options: JSONSerialization.WritingOptions()) {
+                        let json = NSString(data: jsonData, encoding: String.Encoding.utf8.rawValue) as! String
+                        runJavaScript("swiftR.connection.qs = \(json)")
+                    }
                 }
             } else {
                 runJavaScript("swiftR.connection.qs = {}")
@@ -340,7 +342,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
         return true
     }
     
-    func processMessage(_ json: Dictionary<String, AnyObject>) {
+    func processMessage(_ json: Dictionary<String, Any>) {
         if let message = json["message"] as? String {
             switch message {
             case "ready":
@@ -383,7 +385,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
                     }
                 }
             case "error":
-                if let err: AnyObject = json["error"] {
+                if let err: AnyObject = json["error"] as AnyObject? {
                     error?(err)
                 } else {
                     error?(nil)
@@ -391,7 +393,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
             default:
                 break
             }
-        } else if let data: AnyObject = json["data"] {
+        } else if let data: Any = json["data"] {
             received?(data)
         } else if let hubName = json["hub"] as? String {
             let callbackID = json["id"] as? String
@@ -430,7 +432,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
     open func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
         if let id = message.body as? String {
             wkWebView.evaluateJavaScript("readMessage('\(id)')", completionHandler: { [weak self] (msg, err) in
-                if let m = msg as? Dictionary<String, AnyObject> {
+                if let m = msg as? Dictionary<String, Any> {
                     self?.processMessage(m)
                 } else if let e = err {
                     print("SwiftR unable to process message \(id): \(e)")
