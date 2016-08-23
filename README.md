@@ -14,6 +14,8 @@ Since there are no coupled unit tests, and my knowledge of SignalR is lacking at
 
 -Sam
 
+Update 1 - This is actually a broken change. JSON serialization does not appear to be working for queryString.
+
 ---
 
 ### Demo
