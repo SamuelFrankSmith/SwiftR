@@ -73,7 +73,7 @@ public final class SwiftR: NSObject {
         }
     }
     
-    #if os(iOS)
+//    #if os(iOS)
         public class func cleanup() {
             let temp = URL(fileURLWithPath: NSTemporaryDirectory())
             let jqueryTempURL = temp.appendingPathComponent("jquery-2.1.3.min.js")
@@ -96,7 +96,7 @@ public final class SwiftR: NSObject {
                 print("Failed to remove temp JavaScript")
             }
         }
-    #endif
+//    #endif
     
     class func checkConnections() {
         if connections.count == 0 {
@@ -168,7 +168,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
     
     open var customUserAgent: String? {
         didSet {
-            #if os(iOS)
+//            #if os(iOS)
                 if SwiftR.useWKWebView {
                     if #available(iOS 9.0, *) {
                         wkWebView.customUserAgent = customUserAgent
@@ -178,17 +178,17 @@ open class SignalR: NSObject, SwiftRWebDelegate {
                 } else {
                     print("Unable to set user agent for UIWebView. Please register defaults via NSUserDefaults instead.")
                 }
-            #else
-                if SwiftR.useWKWebView {
-                    if #available(OSX 10.11, *) {
-                        wkWebView.customUserAgent = customUserAgent
-                    } else {
-                        print("Unable to set user agent for WKWebView on OS X <= 10.10.")
-                    }
-                } else {
-                    webView.customUserAgent = customUserAgent
-                }
-            #endif
+//            #else
+//                if SwiftR.useWKWebView {
+//                    if #available(OSX 10.11, *) {
+//                        wkWebView.customUserAgent = customUserAgent
+//                    } else {
+//                        print("Unable to set user agent for WKWebView on OS X <= 10.10.")
+//                    }
+//                } else {
+//                    webView.customUserAgent = customUserAgent
+//                }
+//            #endif
         }
     }
     
@@ -217,7 +217,7 @@ open class SignalR: NSObject, SwiftRWebDelegate {
             
             // Loading file:// URLs from NSTemporaryDirectory() works on iOS, not OS X.
             // Workaround on OS X is to include the script directly.
-            #if os(iOS)
+//            #if os(iOS)
                 if #available(iOS 9.0, *) {
                     let temp = URL(fileURLWithPath: NSTemporaryDirectory())
                     let jqueryTempURL = temp.appendingPathComponent("jquery-2.1.3.min.js")
@@ -252,15 +252,15 @@ open class SignalR: NSObject, SwiftRWebDelegate {
                     signalRInclude = "<script src='\(signalRTempURL.absoluteString)'></script>"
                     jsInclude = "<script src='\(jsTempURL.absoluteString)'></script>"
                 }
-            #else
-                let jqueryString = try! NSString(contentsOf: jqueryURL, encoding: String.Encoding.utf8.rawValue)
-                let signalRString = try! NSString(contentsOf: signalRURL, encoding: String.Encoding.utf8.rawValue)
-                let jsString = try! NSString(contentsOf: jsURL, encoding: String.Encoding.utf8.rawValue)
-                
-                jqueryInclude = "<script>\(jqueryString)</script>"
-                signalRInclude = "<script>\(signalRString)</script>"
-                jsInclude = "<script>\(jsString)</script>"
-            #endif
+//            #else
+//                let jqueryString = try! NSString(contentsOf: jqueryURL, encoding: String.Encoding.utf8.rawValue)
+//                let signalRString = try! NSString(contentsOf: signalRURL, encoding: String.Encoding.utf8.rawValue)
+//                let jsString = try! NSString(contentsOf: jsURL, encoding: String.Encoding.utf8.rawValue)
+//                
+//                jqueryInclude = "<script>\(jqueryString)</script>"
+//                signalRInclude = "<script>\(signalRString)</script>"
+//                jsInclude = "<script>\(jsString)</script>"
+//            #endif
             
             let config = WKWebViewConfiguration()
             config.userContentController.add(self, name: "interOp")
@@ -286,13 +286,13 @@ open class SignalR: NSObject, SwiftRWebDelegate {
                 + "</body></html>"
             
             webView = SwiftRWebView()
-            #if os(iOS)
+//            #if os(iOS)
                 webView.delegate = self
                 webView.loadHTMLString(html, baseURL: bundle.bundleURL)
-            #else
-                webView.policyDelegate = self
-                webView.mainFrame.loadHTMLString(html, baseURL: bundle.bundleURL)
-            #endif
+//            #else
+//                webView.policyDelegate = self
+//                webView.mainFrame.loadHTMLString(html, baseURL: bundle.bundleURL)
+//            #endif
         }
     }
     
@@ -423,9 +423,9 @@ open class SignalR: NSObject, SwiftRWebDelegate {
     
     // http://stackoverflow.com/questions/26514090/wkwebview-does-not-run-javascriptxml-http-request-with-out-adding-a-parent-vie#answer-26575892
     open func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-        #if os(iOS)
+//        #if os(iOS)
             UIApplication.shared.keyWindow?.addSubview(wkWebView)
-        #endif
+//        #endif
     }
     
     // MARK: - WKScriptMessageHandler
@@ -446,18 +446,18 @@ open class SignalR: NSObject, SwiftRWebDelegate {
     
     // MARK: - Web delegate methods
     
-#if os(iOS)
+//#if os(iOS)
     open func webView(_ webView: UIWebView, shouldStartLoadWith request: URLRequest, navigationType: UIWebViewNavigationType) -> Bool {
         return shouldHandleRequest(request)
     }
-#else
-    public func webView(_ webView: WebView!, decidePolicyForNavigationAction actionInformation: [AnyHashable : Any]!, request: URLRequest!, frame: WebFrame!, decisionListener listener: WebPolicyDecisionListener!) {
-        
-        if shouldHandleRequest(request as URLRequest) {
-            listener.use()
-        }
-    }
-#endif
+//#else
+//    public func webView(_ webView: WebView!, decidePolicyForNavigationAction actionInformation: [AnyHashable : Any]!, request: URLRequest!, frame: WebFrame!, decisionListener listener: WebPolicyDecisionListener!) {
+//        
+//        if shouldHandleRequest(request as URLRequest) {
+//            listener.use()
+//        }
+//    }
+//#endif
 }
 
 // MARK: - Hub
@@ -542,10 +542,10 @@ public enum SignalRVersion : CustomStringConvertible {
     }
 }
 
-#if os(iOS)
+//#if os(iOS)
     typealias SwiftRWebView = UIWebView
     public protocol SwiftRWebDelegate: WKNavigationDelegate, WKScriptMessageHandler, UIWebViewDelegate {}
-#else
-    typealias SwiftRWebView = WebView
-    public protocol SwiftRWebDelegate: WKNavigationDelegate, WKScriptMessageHandler, WebPolicyDelegate {}
-#endif
+//#else
+//    typealias SwiftRWebView = WebView
+//    public protocol SwiftRWebDelegate: WKNavigationDelegate, WKScriptMessageHandler, WebPolicyDelegate {}
+//#endif
